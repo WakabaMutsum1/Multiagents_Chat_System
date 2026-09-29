@@ -50,7 +50,7 @@ async function startAgent(model, prompt, message, temp, maxOutputTokens, parser 
     const retryPrompt = `${prompt}\n\n上次没有生成合法 JSON。${contract} 只返回一个完整 JSON 对象，不要输出 JSON 以外的文字。`;
     return await requestAgent(retryPrompt, 2);
 }
-
+}
 function formatToolResultForPrompt(toolResult) {
     if (toolResult === null || toolResult === undefined) {
         return "无工具结果";
@@ -309,4 +309,4 @@ router.get("/history", async (req,res) => {
         });
     }
 });
-module.exports = router;
+module.exports = router; 
