@@ -40,18 +40,17 @@ async function startAgent(model, prompt, message, temp, maxOutputTokens, parser 
     try {
         return await requestAgent(prompt, 1);
     } catch (firstError) {
-        if (firstError.status === 429) {
-            await new Promise(resolve => setTimeout(resolve, 60_000));
-            return await requestAgent(prompt, 2);
-        } else if(!(firstError instanceof AgentOutputValidationError)) {
-            throw firstError;
-        } else {
-            console.warn("Agent JSON 输出失败，正在重试：", firstError.message);
-            const retryPrompt = `${prompt}\\上次输出校验失败：${firstError.message}重试要求：只输出一个完整 JSON 对象，不要输出思考过程、代码块或 JSON 之外的内容。${contract}`;
-            return await requestAgent(retryPrompt, 2);
-        }
+    if (firstError.status === 429) {
+        await new Promise(resolve => setTimeout(resolve, 60_000));
+        return await requestAgent(prompt, 2);
     }
+    const jsonFailed =
+        firstError instanceof AgentOutputValidationError || (firstError.status === 400 && /json_validate_failed|Failed to generate JSON/i.test(String(firstError.message)));
+    if (!jsonFailed) throw firstError;
+    const retryPrompt = `${prompt}\n\n上次没有生成合法 JSON。${contract} 只返回一个完整 JSON 对象，不要输出 JSON 以外的文字。`;
+    return await requestAgent(retryPrompt, 2);
 }
+
 function formatToolResultForPrompt(toolResult) {
     if (toolResult === null || toolResult === undefined) {
         return "无工具结果";

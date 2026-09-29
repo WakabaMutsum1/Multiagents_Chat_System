@@ -92,11 +92,7 @@ async function sendMessage() {
         }
         if (clerk.user?.id !== userIdAtStart) return;
 
-        const agentReplies = [
-            { content: data.agentA, className: "agent-a-message" },
-            { content: data.agentB, className: "agent-b-message" },
-            { content: data.agentC, className: "agent-c-message" }
-        ].filter((reply) => reply.content);
+        const agentReplies = [{ content: data.finalAnswer, className: "agent-c-message" }].filter(reply => reply.content);
 
         if (data.finalAnswer) {
             messageHistory.push({
