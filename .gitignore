@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.DS_Store
+*.log
+three-agent-eval/*.json
+!three-agent-eval/cases.json
+clerk-javascript/

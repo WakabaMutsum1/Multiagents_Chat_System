@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="chat-app">
+        <header class="chat-header">
+            <h1>Agent Chat</h1>
+            <p>让 Agent A，Agent B 和 Agent C 围绕你的问题对话</p>
+            <div id="userButton" aria-label="用户账户"></div>
+        </header>
+
+        <section id="authPanel" class="auth-panel" aria-label="登录或注册">
+            <p id="authStatus">正在加载登录功能…</p>
+            <div id="signIn"></div>
+        </section>
+
+        <section id="box" class="chat-window" aria-live="polite"></section>
+
+        <p id="reply" class="status-text"></p>
+
+        <div class="chat-input-area">
+            <input id="messageInput" type="text" placeholder="Message Agent Chat">
+            <button id="sendButton" type="button" aria-label="发送消息"></button>
+        </div>
+    </main>
+
+    <script src="auth.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>
