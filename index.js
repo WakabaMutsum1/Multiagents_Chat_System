@@ -5,11 +5,92 @@ const box = document.querySelector("#box");
 let messageHistory = [];
 let isSending = false;
 
-window.addEventListener("auth-user-changed", () => {
+let isLoadingHistory = false;
+let historyLoadVersion = 0;
+
+function appendMessage(content, className) {
+    const element = document.createElement("div");
+    element.textContent = content;
+    element.className = `message ${className}`;
+    box.append(element);
+}
+
+async function loadHistory() {
+    const version = ++historyLoadVersion;
+    isLoadingHistory = true;
     messageHistory = [];
     box.replaceChildren();
+
+    try {
+        const clerk = await window.clerkReady;
+        if (version !== historyLoadVersion) return;
+        if (!clerk.user || !clerk.session) return;
+
+        const userId = clerk.user.id;
+        const token = await clerk.session.getToken();
+        if (!token) throw new Error("登录已失效，请重新登录");
+
+        const response = await fetch("/chat/history", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            cache: "no-store"
+        });
+
+        const rows = await response.json();
+        if (!response.ok) {
+            throw new Error(rows.error || "历史记录加载失败");
+        }
+        if (!Array.isArray(rows)) {
+            throw new Error("历史记录返回格式错误");
+        }
+
+        
+        if (
+            version !== historyLoadVersion ||
+            clerk.user?.id !== userId
+        ) return;
+
+        
+        for (const row of [...rows].reverse()) {
+            appendMessage(row.user_message, "user-message");
+            messageHistory.push({
+                role: "user",
+                content: row.user_message
+            });
+
+            
+            const answer = row.agent_c || row.agent_b;
+            if (answer) {
+                appendMessage(answer, "agent-c-message");
+                messageHistory.push({
+                    role: "assistant",
+                    content: answer
+                });
+            }
+        }
+
+        box.scrollTop = box.scrollHeight;
+    } catch (error) {
+        if (version !== historyLoadVersion) return;
+        console.error("历史加载失败:", error);
+        appendMessage(
+            error.message || "历史记录加载失败，请刷新重试",
+            "error-message"
+        );
+    } finally {
+        if (version === historyLoadVersion) {
+            isLoadingHistory = false;
+        }
+    }
+}
+
+window.addEventListener("auth-user-changed", () => {
     input.value = "";
+    loadHistory();
 });
+
+window.clerkReady.then(() => loadHistory()).catch(() => {});
 
 async function sendMessage() {
     let clerk;
@@ -26,7 +107,7 @@ async function sendMessage() {
     const originalMessage = input.value.trim();
     const historyCheckpoint = messageHistory.length;
 
-    if (isSending) {
+    if (isSending || isLoadingHistory) {
         const busyMessage = document.createElement("div");
         busyMessage.textContent = "前面正在运行，请稍后再试";
         busyMessage.className = "message info-message";
