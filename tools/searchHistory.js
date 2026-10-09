@@ -9,9 +9,8 @@ async function getHistory(args, userId){
         SELECT
         m.id,
         m.user_message,
-        m.agent_a,
-        m.agent_b,
-        m.agent_c,
+        m.agent_c AS assistant_reply,
+        m.created_at,
         k.user_embedding <-> $1::vector AS distance
         FROM knowledge_chunks AS k
         JOIN messages AS m ON m.id = k.message_id

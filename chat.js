@@ -65,13 +65,15 @@ function formatToolResultForPrompt(toolResult) {
             return "没有查询到相关聊天记录。";
         }
 
-        return toolResult
-            .slice(0, 5)
-            .map((item) => {
-                return `用户：${item.user_message}\nAgent A：${item.agent_a}\nAgent B：${item.agent_b}\nAgent C：${item.agent_c}`;
-            })
-            .join("\n\n---\n\n");
+        return toolResult.slice(0, 5).map((item) => {
+            
+            return `记录 ID：${item.id}
+            用户原文：${item.user_message}
+            助手最终回复（assistant_reply）：${item.assistant_reply}`;
+            
+        }).join("\n\n---\n\n");
     }
+
 
     if (toolResult.success && Array.isArray(toolResult.results)) {
         if (toolResult.results.length === 0) return "检索已完成，没有返回相关来源；这不证明所查询的事实不存在。";
